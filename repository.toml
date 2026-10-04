@@ -1,0 +1,8 @@
+# Repositories recognized as official by FeROS Targets.
+# Repository URLs identify sources; they are not catalog download endpoints.
+schema_version = 1
+
+[[repositories]]
+name = "FeROS Official Repository"
+url = "https://github.com/ialopezg/feros-targets"
+published_date = "2026-10-04T01:49:59Z"
