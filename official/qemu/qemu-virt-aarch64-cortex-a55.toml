@@ -1,0 +1,14 @@
+# Device identity and discovery metadata. Installation is not defined yet.
+schema_version = "1.0"
+
+[device]
+id = "qemu-virt-aarch64-cortex-a55"
+name = "FeROS QEMU Virt AArch64 — Cortex-A55"
+brand = "qemu"
+model = "virt"
+architecture = "aarch64"
+cpu = "cortex-a55"
+kind = "virtual"
+version = "0.1.0"
+support = "official"
+installable = false
