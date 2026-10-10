@@ -1,0 +1,13 @@
+# Every change requires approval from a maintainer listed here.
+# Enforced by the "Protect main" ruleset (require_code_owner_review).
+# Owners must have write access to the repository for GitHub to honor them.
+*                       @ialopezg @gailisis
+
+# Explicit entries for the sensitive areas, so they survive future edits to "*".
+/repository.toml        @ialopezg @gailisis
+/catalog.toml           @ialopezg @gailisis
+/official/              @ialopezg @gailisis
+/experimental/          @ialopezg @gailisis
+/scripts/               @ialopezg @gailisis
+/.github/               @ialopezg @gailisis
+/LICENSE                @ialopezg @gailisis

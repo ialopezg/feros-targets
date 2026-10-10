@@ -4,7 +4,7 @@
 
 | Person             | GitHub                                   | Responsibility                                                        |
 |--------------------|------------------------------------------|-----------------------------------------------------------------------|
-| Isidro A. Lopez G. | [@ialopezg](https://github.com/ialopezg) | Catalog direction, target review, security coordination, and releases |
+| Isidro A. Lopez G. | [@ialopezg](https://github.com/ialopezg) | Catalog direction, device review, security coordination, and releases |
 
 Git history records contributions to manifests, documentation, and tooling.
 Attribution does not grant repository access or release authority.

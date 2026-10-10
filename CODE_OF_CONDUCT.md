@@ -3,7 +3,7 @@
 ## Scope and expectations
 
 This policy applies to project issues, pull requests, discussions, reviews,
-and other spaces where participants represent FeROS Targets.
+and other spaces where participants represent FeROS Sources.
 
 Treat participants respectfully. Critique code and decisions with evidence.
 Accept technical disagreement, respect privacy, and make room for contributors
