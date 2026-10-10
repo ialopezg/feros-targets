@@ -1,0 +1,30 @@
+# IDE and editor
+.idea/
+*.iml
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python (scripts/validate.py)
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local scratch and secrets
+*.log
+*.tmp
+.env
+.env.*
+
+# Distribution scope: never commit these (see THIRD_PARTY.md)
+*.bin
+*.img
+*.iso
+*.rom
+*.elf
+*.zip

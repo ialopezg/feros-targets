@@ -10,6 +10,7 @@ Fails on anything the project has not explicitly approved:
 import hashlib
 import re
 import stat
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -49,6 +50,24 @@ def err(msg: str) -> None:
 
 
 def tracked_files():
+    """Yield (path, posix-relative-path) for tracked files.
+
+    Uses `git ls-files` when available, so ignored or untracked local files
+    (IDE folders, caches) do not affect the result. Falls back to walking the
+    tree, which is what a fresh archive without .git needs.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(ROOT), "ls-files", "-z"],
+            check=True, capture_output=True).stdout
+        rels = sorted(r for r in out.decode("utf-8").split("\0") if r)
+        for rel in rels:
+            p = ROOT / rel
+            if p.is_file() or p.is_symlink():
+                yield p, rel
+        return
+    except (OSError, subprocess.CalledProcessError):
+        pass
     for p in sorted(ROOT.rglob("*")):
         rel = p.relative_to(ROOT)
         if any(part in SKIP_DIRS for part in rel.parts):
