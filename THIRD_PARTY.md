@@ -1,9 +1,9 @@
 # Third-Party Material
 
-Original FeROS Targets manifests and documentation use the MIT license in
+Original FeROS Sources manifests and documentation use the MIT license in
 [LICENSE](LICENSE). That license does not relicense third-party material.
 
-This catalog is intended to contain target definitions and supporting
+This catalog is intended to contain device definitions and supporting
 documentation. Firmware binaries, operating-system images, ROM collections,
 emulators, and native runtimes are outside its distribution scope.
 

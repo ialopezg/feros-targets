@@ -30,7 +30,7 @@ is a separate publisher-declared classification (`official` or `experimental`).
 Initial consumers accept schema 1.0 explicitly. A new minor schema requires a
 compatibility decision; it is not automatically accepted. Breaking changes
 require a new major schema. Schema changes never authorize deleting local data.
-Published target revisions and catalog snapshots must remain immutable; use a
+Published device revisions and catalog snapshots must remain immutable; use a
 new version for changes. No timestamps are used as proof of authenticity.
 
 ## Fields and validation
@@ -60,7 +60,7 @@ discovery and authenticated update policy remain a separate implementation step.
 catalog snapshot, then replace its local cache atomically. An error retains the
 previous cache. `--info <index|name>` reads one cached catalog; `--search <text>`
 searches cached IDs, brands, models and display names case-insensitively across
-registered repositories. Results always identify the source and target version.
+registered repositories. Results always identify the source and device version.
 If no cache exists, show that an update is required; do not report an empty
 repository or silently access the network.
 
@@ -70,11 +70,11 @@ alone does not provide a Builder implementation.
 
 ## Initial QEMU scope
 
-QEMU is the first designated official target. Existing project policy limits
+QEMU is the first designated official device. Existing project policy limits
 its intended verified scope to Core compilation, ELF validation and the FeROS
 UART boot message. This manifest does not add physical-media operations or
 claim an installed toolchain. Record tested Core, QEMU and toolchain revisions
-as required by STABILITY.md before publishing an official target release.
+as required by STABILITY.md before publishing an official device release.
 
 This is a new discovery contract, not a reinterpretation of the legacy X55
 `manifest_version = 1` RKNS format. Legacy manifests are not indexed until an

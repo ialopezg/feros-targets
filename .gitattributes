@@ -1,0 +1,4 @@
+# Manifests are hashed by their exact bytes (see docs/catalog.md).
+# Force LF so checkouts on any OS produce identical bytes.
+* text=auto eol=lf
+*.toml text eol=lf
