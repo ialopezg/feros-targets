@@ -1,0 +1,101 @@
+name: Release
+
+# A release is a deliberate act: raise catalog_version in src/catalog.toml through
+# an approved pull request. When that change lands on main and no tag exists for
+# the version, this workflow validates the tree and creates a draft release.
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/catalog.toml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write   # create the tag and the release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Decide whether this is a new release
+        id: v
+        run: |
+          set -euo pipefail
+          version=$(python -c 'import tomllib;print(tomllib.load(open("src/catalog.toml","rb"))["catalog_version"])')
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::catalog_version '$version' is not MAJOR.MINOR.PATCH"; exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+            echo "Tag v$version already exists; this change is not a release."
+            echo "release=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          latest=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n1 || true)
+          if [ -n "$latest" ]; then
+            top=$(printf '%s\n%s\n' "${latest#v}" "$version" | sort -V | tail -n1)
+            if [ "$top" != "$version" ]; then
+              echo "::error::catalog_version $version is not greater than the latest release $latest"; exit 1
+            fi
+          fi
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check changelog
+        if: steps.v.outputs.release == 'true'
+        run: |
+          set -euo pipefail
+          v="${{ steps.v.outputs.version }}"
+          vre="${v//./\\.}"
+          line=$(grep -E "^## \\[$vre\\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md || true)
+          [ -n "$line" ] || { echo "::error::CHANGELOG.md has no dated entry '## [$v] - YYYY-MM-DD'"; exit 1; }
+          date="${line##* - }"
+          today=$(date -u +%F)
+          if [[ "$date" > "$today" ]]; then
+            echo "::error::changelog date $date is in the future"; exit 1
+          fi
+
+      - name: Validate sources
+        if: steps.v.outputs.release == 'true'
+        run: python scripts/validate.py
+
+      - name: Build release assets
+        if: steps.v.outputs.release == 'true'
+        run: |
+          set -euo pipefail
+          python scripts/build_site.py
+          name="feros-sources-v${{ steps.v.outputs.version }}"
+          mkdir -p dist
+          # Reproducible archive: sorted entries, fixed mtime and owner, no gzip timestamp.
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+              --exclude=./index.html --exclude=./.nojekyll \
+              -C dist/site -cf - . | gzip -n > "dist/$name.tar.gz"
+          (cd dist && sha256sum "$name.tar.gz" > SHA256SUMS)
+          cat dist/SHA256SUMS
+
+      - name: Create draft release
+        if: steps.v.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          v="${{ steps.v.outputs.version }}"
+          gh release create "v$v" "dist/feros-sources-v$v.tar.gz" dist/SHA256SUMS \
+            --target "$GITHUB_SHA" \
+            --title "FeROS Sources v$v" \
+            --generate-notes \
+            --draft
