@@ -13,6 +13,7 @@ import html
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -21,7 +22,21 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "src"
 OUT = ROOT / "dist" / "site"
 REPO = os.environ.get("GITHUB_REPOSITORY", "ialopezg/feros-sources")
-COMMIT = os.environ.get("GITHUB_SHA", "unknown")
+def resolve_commit() -> str:
+    if commit := os.environ.get("GITHUB_SHA"):
+        return commit
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=ROOT,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip() or "unknown"
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+COMMIT = resolve_commit()
 
 
 def sha256(path: Path) -> str:
