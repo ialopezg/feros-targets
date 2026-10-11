@@ -28,3 +28,7 @@ __pycache__/
 *.rom
 *.elf
 *.zip
+
+# Generated site output
+/dist/
+_site/

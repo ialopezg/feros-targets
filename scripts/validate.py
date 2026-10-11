@@ -17,19 +17,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MAX_FILE_BYTES = 256 * 1024
-SKIP_DIRS = {".git"}
+SKIP_DIRS = {".git", "_site", "dist"}
 
 ALLOWED_ROOT_FILES = {
     "CODE_OF_CONDUCT.md", "COLLABORATORS.md", "CONTRIBUTING.md", "LICENSE",
     "README.md", "SECURITY.md", "STABILITY.md", "THIRD_PARTY.md",
-    "VERSIONING.md", "CHANGELOG.md", "RELEASE.md", "catalog.toml", "repository.toml",
+    "VERSIONING.md", "CHANGELOG.md", "RELEASE.md", "Makefile",
     ".gitattributes", ".gitignore",
 }
 ALLOWED_PATTERNS = [
     re.compile(r"docs/[A-Za-z0-9._-]+\.md"),
     re.compile(r"docs/adr/[A-Za-z0-9._-]+\.md"),
-    re.compile(r"(official|experimental)/[a-z0-9-]+/[a-z0-9][a-z0-9.-]*\.toml"),
-    re.compile(r"scripts/validate\.py"),
+    re.compile(r"src/(official|experimental)/[a-z0-9-]+/[a-z0-9][a-z0-9.-]*\.toml"),
+    re.compile(r"src/(repository|catalog)\.toml"),
+    re.compile(r"scripts/(validate|build_site|release)\.py"),
     re.compile(r"\.github/CODEOWNERS"),
     re.compile(r"\.github/workflows/[A-Za-z0-9._-]+\.yml"),
     re.compile(r"\.github/rulesets/[A-Za-z0-9._-]+\.json"),
@@ -99,7 +100,7 @@ def check_tree() -> list[str]:
             err(f"{rel}: not valid UTF-8")
         if b"\r" in data:
             err(f"{rel}: must use LF line endings (hashes depend on exact bytes)")
-        if re.fullmatch(r"(official|experimental)/[^/]+/[^/]+\.toml", rel):
+        if re.fullmatch(r"src/(official|experimental)/[^/]+/[^/]+\.toml", rel):
             manifests.append(rel)
     return manifests
 
@@ -130,7 +131,7 @@ def safe_rel_path(value: str) -> bool:
 
 
 def check_repository():
-    data = load("repository.toml")
+    data = load("src/repository.toml")
     if data is None:
         return
     if data.get("schema_version") != 1:
@@ -146,7 +147,7 @@ def check_repository():
 
 
 def check_catalog(manifests: list[str]):
-    cat = load("catalog.toml")
+    cat = load("src/catalog.toml")
     if cat is None:
         return
     if cat.get("schema_version") != "1.0":
@@ -167,7 +168,7 @@ def check_catalog(manifests: list[str]):
             err(f"catalog.toml[{did}]: unsafe manifest path {manifest!r}")
             continue
         listed.add(manifest)
-        mp = ROOT / manifest
+        mp = ROOT / "src" / manifest
         if not mp.is_file():
             err(f"catalog.toml[{did}]: manifest {manifest} does not exist")
             continue
@@ -195,7 +196,7 @@ def check_catalog(manifests: list[str]):
         if not SEMVER.match(str(d.get("version", ""))):
             err(f"catalog.toml[{did}]: version must be MAJOR.MINOR.PATCH")
 
-        m = load(manifest)
+        m = load(f"src/{manifest}")
         if m is None:
             continue
         walk_keys(m, f"{manifest}:")
@@ -211,7 +212,7 @@ def check_catalog(manifests: list[str]):
             err(f"{manifest}: device.installable must be false (contract 1.0)")
 
     for m in manifests:
-        if m not in listed:
+        if m.removeprefix("src/") not in listed:
             err(f"{m}: manifest is not listed in catalog.toml (unapproved addition)")
 
 
